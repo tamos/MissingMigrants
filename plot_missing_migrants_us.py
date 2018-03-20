@@ -9,6 +9,7 @@ from bokeh.models import (
 )
 from bokeh.palettes import Viridis6 as palette
 from bokeh.plotting import figure
+from bokeh.embed import components
 
 from bokeh.sampledata.us_counties import data as counties
 
@@ -58,7 +59,7 @@ source = ColumnDataSource(data=dict(
 TOOLS = "pan,wheel_zoom,reset,hover,save"
 
 p = figure(
-    title="Missing Migrants in the US", tools=TOOLS,
+    title="Missing Migrants in the US, 01-2014 to 03-2018", tools=TOOLS,
     x_axis_location=None, y_axis_location=None
 )
 p.grid.grid_line_color = None
@@ -71,9 +72,14 @@ hover = p.select_one(HoverTool)
 hover.point_policy = "follow_mouse"
 hover.tooltips = [
     ("Name", "@name"),
-    ("Number of Migrant Fatalities", "@rate"),
+    ("# Fatalities/Disappearances", "@rate"),
 ]
-output_file("missing_migrants.html")
+output_file("missing_migrants.html")  # or output to an html
 show(p)
+#script, div = components(p)
+#with open("missing_migrants_script.txt", "w") as f:
+#    f.write(script)
+#with open("missing_migrants_div.txt", "w") as f:
+ #   f.write(div)
 
 
