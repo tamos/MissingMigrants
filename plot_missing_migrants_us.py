@@ -1,6 +1,17 @@
 
 #! path/to/missing_migrants/bin/python
 
+from bokeh.io import show, output_file
+from bokeh.models import (
+    ColumnDataSource,
+    HoverTool,
+    LogColorMapper
+)
+from bokeh.palettes import Viridis6 as palette
+from bokeh.plotting import figure
+
+from bokeh.sampledata.us_counties import data as counties
+
 import pandas as pd
 from us_missing_migrants_preprocess import preprocess
 
@@ -20,29 +31,20 @@ def get_missing_migrant_data():
 
 missing = get_missing_migrant_data()
 
-# Below is mostly borrowed from Bokeh Documentation
-
-
-from bokeh.io import show
-from bokeh.models import (
-    ColumnDataSource,
-    HoverTool,
-    LogColorMapper
-)
-from bokeh.palettes import Viridis6 as palette
-from bokeh.plotting import figure
-
-from bokeh.sampledata.us_counties import data as counties
-
+# Below is borrowed from Bokeh Documentation with modification
 
 palette.reverse()
 
-counties = { code: county for code, county in counties.items() }
+exclusion = ["hi", "ak"] # get rid of hawai and alaska for ease of projection
+inclusion = ["az", "ca", "fl", "la", "nm", "tx","ga", "al", "ms"] # state we want to see
+
+counties = { code: county for code,
+             county in counties.items() if county["state"] in inclusion}
 
 county_xs = [county["lons"] for county in counties.values()]
 county_ys = [county["lats"] for county in counties.values()]
 
-county_names = [county['name'] for county in counties.values()]
+county_names = [county['detailed name'] for county in counties.values()]
 county_rates = [missing[county_id] for county_id in counties]
 color_mapper = LogColorMapper(palette=palette)
 
@@ -71,5 +73,7 @@ hover.tooltips = [
     ("Name", "@name"),
     ("Number of Migrant Fatalities", "@rate"),
 ]
-
+output_file("missing_migrants.html")
 show(p)
+
+
