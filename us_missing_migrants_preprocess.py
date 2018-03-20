@@ -68,7 +68,7 @@ def get_county_df(county_poly, labels, ids):
 
 
 def join_county_migrant(county_df, migrant_df):
-    return gpd.sjoin(migrant_df, county_df, op= 'within', how = 'right')                           
+    return gpd.sjoin(migrant_df, county_df, op= 'within', how = 'right')
 
 
 def preprocess():
@@ -77,8 +77,4 @@ def preprocess():
     migrant_df = get_migrant_df(file_path)
     joined = join_county_migrant(county_df, migrant_df)
     joined.toll.fillna(0.0, inplace = True) # replace no-valued counties with zeros
-    joined.to_csv("us_missing_migrants_processed.csv")
-    
-if __name__ == "__main__":
-    
-    preprocess()
+    return joined
