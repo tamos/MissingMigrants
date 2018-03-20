@@ -57,33 +57,45 @@ def make_county_polygons(counties):
     poly_list = []
     label_list = []
     id_list = []
-    for i in counties.items():
-        val_dict = i[1]
-        lats = [j for j in val_dict['lats']]
+    for i, j in counties.items():
+        val_dict = j
+        lats = [r for r in val_dict['lats']]
         lons = [k for k in val_dict['lons']]
         temp_poly = Polygon([[lats[t], lons[t]] for t in range(len(lats))])
         poly_list.append(temp_poly)
         label_list.append(val_dict['name'])
-        id_list.append(val_dict['
-    return poly_list, label_list
+        id_list.append(i)
+    return poly_list, label_list, id_list
 
-def get_county_df(county_poly, labels):
+def get_county_df(county_poly, labels, ids):
     county_df =  gpd.GeoDataFrame()
     county_df['geometry'] = county_poly
     county_df['names'] = labels
+    county_df['id'] = ids
     return county_df
 
 
 def join_county_migrant(county_df, migrant_df):
     return gpd.sjoin(migrant_df, county_df, op= 'within', how = 'inner')
 
+def plot_counties(county_poly):
+    geo_source = GeoJSONDataSource(geojson=county_poly)
+    p = figure(
+    title="Texas Unemployment, 2009", tools=TOOLS,
+    x_axis_location=None, y_axis_location=None)
+    p.patches('x', 'y', source = geo_source)
+    show(p)
+                            
+
 
 def go():
-    county_poly, labels = make_county_polygons(counties)
-    county_df = get_county_df(county_poly, labels)
+    TOOLS = "pan,wheel_zoom,reset,hover,save"
+    
+    county_poly, labels, ids = make_county_polygons(counties)
+    county_df = get_county_df(county_poly, labels, ids)
     migrant_df = get_migrant_df(file_path)
     joined = join_county_migrant(county_df, migrant_df)
-    return joined # find migrant deaths in the us
+    plot_counties(county_poly)
     
     
 if __name__ == "__main__":
