@@ -4,16 +4,7 @@
 import pandas as pd
 import geopandas as gpd
 from shapely.geometry import Point, Polygon
-from bokeh.io import show
-from bokeh.models import ColumnDataSource, HoverTool, LogColorMapper
-from bokeh.palettes import Viridis6 as palette
-from bokeh.plotting import figure
-from bokeh.embed import components
 from bokeh.sampledata.us_counties import data as counties
-from bokeh.models import GeoJSONDataSource
-
-palette.reverse()
-
 
 # Hats off to : https://medium.com/@bobhaffner/spatial-joins-in-geopandas-c5e916a763f3
 
@@ -76,28 +67,17 @@ def get_county_df(county_poly, labels, ids):
 
 
 def join_county_migrant(county_df, migrant_df):
-    return gpd.sjoin(migrant_df, county_df, op= 'within', how = 'inner')
-
-def plot_counties(county_poly):
-    geo_source = GeoJSONDataSource(geojson=county_poly)
-    p = figure(
-    title="Texas Unemployment, 2009", tools=TOOLS,
-    x_axis_location=None, y_axis_location=None)
-    p.patches('x', 'y', source = geo_source)
-    show(p)
-                            
+    return gpd.sjoin(migrant_df, county_df, op= 'within', how = 'right')                           
 
 
-def go():
-    TOOLS = "pan,wheel_zoom,reset,hover,save"
-    
+def preprocess():
     county_poly, labels, ids = make_county_polygons(counties)
     county_df = get_county_df(county_poly, labels, ids)
     migrant_df = get_migrant_df(file_path)
     joined = join_county_migrant(county_df, migrant_df)
-    plot_counties(county_poly)
-    
+    joined.toll.fillna(0.0, inplace = True) # replace no-valued counties with zeros
+    joined.to_csv("us_missing_migrants_processed.csv")
     
 if __name__ == "__main__":
     
-    go()
+    preprocess()
